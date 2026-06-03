@@ -30,8 +30,8 @@ export async function POST(req: Request) {
       return Response.json({ error: error.message }, { status: 500 });
     }
 
-    return Response.json({
-      success: true,
+    return new Response("OK", {
+      status: 200,
     });
   } catch (error) {
     console.error(error);
