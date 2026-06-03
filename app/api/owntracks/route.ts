@@ -1,21 +1,46 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
+export async function GET() {
+  return Response.json({ status: "ok" });
+}
+
 export async function POST(req: Request) {
-  const data = await req.json();
+  try {
+    const body = await req.text();
 
-  const auth = req.headers.get("authorization");
+    console.log("OwnTracks payload:", body);
 
-  await supabase.from("locations").insert({
-    lat: data.lat,
-    lon: data.lon,
-    tst: data.tst,
-    payload: data,
-  });
+    const data = JSON.parse(body);
 
-  return Response.json({ success: true });
+    const { error } = await supabase.from("locations").insert({
+      lat: data.lat,
+      lon: data.lon,
+      tst: data.tst,
+      payload: data,
+    });
+
+    if (error) {
+      console.error(error);
+
+      return Response.json({ error: error.message }, { status: 500 });
+    }
+
+    return Response.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return Response.json(
+      {
+        error: String(error),
+      },
+      { status: 400 },
+    );
+  }
 }
